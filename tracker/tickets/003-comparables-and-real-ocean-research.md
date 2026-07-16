@@ -2,7 +2,7 @@
 
 - Label: `wayfinder:research` (AFK)
 - Issue: https://github.com/VrajGupta/Surf-Royale/issues/3
-- Status: open
+- Status: closed (resolved 2026-07-16)
 - Assignee: — (unclaimed)
 - Blocked by: —
 

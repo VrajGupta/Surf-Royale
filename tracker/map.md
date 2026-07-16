@@ -21,7 +21,7 @@ A **buildable-by-others Game Design Document** for Ocean Battle Royale (realisti
 
 <!-- one line per closed ticket: gist + link -->
 
-*(none yet — map just charted, 2026-07-16)*
+- [Comparables & real-ocean research (#3)](https://github.com/VrajGupta/Surf-Royale/issues/3) — 50–60 players proven (Apex/Naraka); target 15–25 min matches; paddle ~1 m/s vs ride ~6–11 m/s → waves are the vehicles, map ~2×2 km; rip 0.5–2.5 m/s anchors the zone; PUBG-style projectiles as ballistics reference. Asset: `docs/research/comparables-and-real-ocean.md`.
 
 ## Not yet specified
 

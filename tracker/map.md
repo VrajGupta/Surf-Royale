@@ -48,3 +48,4 @@ A **buildable-by-others Game Design Document** for Ocean Battle Royale (realisti
 - **Monetization economics** — battle-pass pricing, cosmetic pricing, currency design, seasonal pricing cadence. The cosmetic *systems* are in scope; their economics are not (ruled out at charting, 2026-07-16).
 - **Marketing / pitch material** — different artifact, different effort.
 - **Building the game** — no gameplay code on this map; prototypes only as decision aids.
+- [GDD assembly (#16)](https://github.com/VrajGupta/Surf-Royale/issues/16) — docs/GDD.md: 14 sections + 12 tuning tables (all numbers tunable, source-ticketed); win condition verified HP-only ("functional board" clause dropped, supersession documented); assembly gaps resolved — board integrity 0–100 chip-damage scale, riptide drag as ratio ≤60% of healthy paddle speed.

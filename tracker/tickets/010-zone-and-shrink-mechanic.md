@@ -13,3 +13,5 @@ The "safe zone is a moving swell/current" idea made geometrically concrete: what
 ## Decision (2026-07-17)
 
 Translating circle: contracts + drifts with swell each phase, drift path shown one phase ahead. Read: diegetic (turquoise vs grey chop, fog wall, current line) + conventional map/compass ring. Riptide: outward drag 0.5→2.0 m/s across phases 1–4, always swimmable-against when healthy (paddle ~4–6 m/s per #2); tax is stamina, not a wall. Cold: 20s shiver grace per exit, then 3/6/10/15 HP/s by phase.
+
+> Amended (2026-07-16, via #16 GDD assembly): riptide drag redefined as a ratio — always ≤60% of a healthy player's effective paddle speed (was absolute 0.5→2.0 m/s, which conflicted with #2's ~1 m/s paddling). Escapability intent unchanged; per-phase values derive from the ratio.

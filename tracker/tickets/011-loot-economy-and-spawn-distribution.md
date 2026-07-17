@@ -17,3 +17,5 @@ Ammo tight: ≈7,000 rounds map-wide (~120/player for 50–60 players) — 2–3
 ### Amendment (via #12, 2026-07-17)
 
 Depth = value: loot within each POI tiered surface/mid/deep; wrecks hold the most deep slots. 70/30 POI-vs-debris split, tight ammo budget, front-loaded curve unchanged.
+
+> Amended (2026-07-16, via #16 GDD assembly): board integrity specced — 0–100 scale; bullets 5–10/hit, reef/rock 15–25, heavy wipeouts 10 (tunable); at 0 the board snaps → adrift/swimming (recoverable per #2); repair kit = +50 of 100.

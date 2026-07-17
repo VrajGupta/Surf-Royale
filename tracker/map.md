@@ -23,10 +23,10 @@ A **buildable-by-others Game Design Document** for Ocean Battle Royale (realisti
 
 - [Comparables & real-ocean research (#3)](https://github.com/VrajGupta/Surf-Royale/issues/3) — 50–60 players proven (Apex/Naraka); target 15–25 min matches; paddle ~1 m/s vs ride ~6–11 m/s → waves are the vehicles, map ~2×2 km; rip 0.5–2.5 m/s anchors the zone; PUBG-style projectiles as ballistics reference. Asset: `docs/research/comparables-and-real-ocean.md`.
 - [Match format & team modes (#17)](https://github.com/VrajGupta/Surf-Royale/issues/17) — flexible 50–60 lobby (fills to 60, launches 50+; tuned at 60); Solos + Duos (squads post-GDD); no DBNO — once-per-match 'waterlogged' stabilize with permanent injury tier. Graduated fog → [#18](https://github.com/VrajGupta/Surf-Royale/issues/18), [#19](https://github.com/VrajGupta/Surf-Royale/issues/19).
+- [Surf movement & ocean physics model (#2)](https://github.com/VrajGupta/Surf-Royale/issues/2) — forecastable swell sets (3–5 waves, 60–90 s apart, seeded, readable tells); 6-state machine (paddle ~1 m/s / duck-dive / pop-up / ride 6–11 m/s / wipeout / tread); sidearm-only while riding; wipeout = 1–4 s hold-down + leash, top-tier waves ~25% leash-snap → board adrift. Graduated fog → [#20](https://github.com/VrajGupta/Surf-Royale/issues/20).
 
 ## Not yet specified
 
-- **Onboarding / tutorial & difficulty ramp** — how a new player learns wave-reading; can't size it until [Surf movement & ocean physics model (#2)](https://github.com/VrajGupta/Surf-Royale/issues/2) fixes how deep the sim goes.
 - **Full numeric tuning tables** — the GDD's appendix of numbers; graduates per-system as each system's rules close.
 - **Per-screen UI visual specs** — can't ticket until the [UX direction handoff (#6)](https://github.com/VrajGupta/Surf-Royale/issues/6) lands; only then does the visual system have surfaces to apply to.
 - **Accessibility** — colorblind-safe water/zone reads, audio-cue alternatives; hangs on the audio and UI systems.

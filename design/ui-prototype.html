@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Surf Royale — UI visual system prototype</title>
+<style>
+:root{
+  --ink-0:oklch(0.15 0.02 230);--ink-1:oklch(0.25 0.03 230);--ink-2:oklch(0.45 0.04 230);
+  --mist-1:oklch(0.85 0.03 230);--mist-0:oklch(0.96 0.01 230);
+  --surf:oklch(0.72 0.13 210);--coral:oklch(0.70 0.17 40);--danger:oklch(0.62 0.21 25);
+  --zone:oklch(0.55 0.24 310);
+  --step:1.25;--base:clamp(16px,1rem + 0.3vw,18px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink-0);color:var(--mist-0);
+  font-family:system-ui,-apple-system,sans-serif;font-size:var(--base);line-height:1.5;padding:2rem}
+h1{font-size:calc(var(--base)*var(--step)*var(--step)*var(--step));line-height:1.1;font-weight:800;margin:0 0 .5rem}
+h2{font-size:calc(var(--base)*var(--step));line-height:1.2;font-weight:700;color:var(--mist-1);margin:2rem 0 .75rem}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.row{display:flex;gap:1rem;flex-wrap:wrap;align-items:stretch}
+.swatch{width:7.5rem;height:4.5rem;border-radius:.5rem;display:flex;align-items:end;padding:.4rem;
+  font-size:.75rem;color:var(--mist-0);border:1px solid oklch(0.35 0.03 230)}
+.card{background:var(--ink-1);border:1px solid oklch(0.32 0.03 230);border-radius:.75rem;padding:1.25rem;max-width:22rem}
+.glass{background:oklch(0.2 0.03 230/0.55);backdrop-filter:blur(12px);border:1px solid oklch(0.9 0.02 230/0.25);
+  border-radius:.75rem;padding:1rem 1.25rem;max-width:22rem}
+.ocean{background:linear-gradient(160deg,oklch(0.65 0.12 220),oklch(0.4 0.09 240));padding:2rem;border-radius:1rem}
+button{font:inherit;min-width:44px;min-height:44px;padding:.6rem 1.4rem;border-radius:.6rem;border:0;cursor:pointer;
+  background:var(--coral);color:var(--ink-0);font-weight:700;
+  transition:transform 180ms ease,opacity 180ms ease}
+button:hover{opacity:.9}button:active{transform:scale(0.96)}
+button:focus-visible{outline:3px solid var(--surf);outline-offset:2px}
+button.secondary{background:transparent;color:var(--surf);border:1.5px solid var(--surf)}
+@media (prefers-reduced-motion:reduce){button{transition:opacity 180ms ease}}
+.zonechip{background:var(--zone);color:var(--mist-0)}
+small{color:var(--mist-1)}
+</style></head><body>
+<h1>Surf Royale UI</h1>
+<small>OKLCH ocean-derived tokens · dark-first · glass + solid surfaces</small>
+<h2>Tokens</h2>
+<div class="row">
+  <div class="swatch" style="background:var(--ink-0)">ink-0</div>
+  <div class="swatch" style="background:var(--ink-1)">ink-1</div>
+  <div class="swatch" style="background:var(--ink-2)">ink-2</div>
+  <div class="swatch" style="background:var(--surf);color:var(--ink-0)">surf</div>
+  <div class="swatch" style="background:var(--coral);color:var(--ink-0)">coral</div>
+  <div class="swatch zonechip">zone (reserved)</div>
+</div>
+<h2>Solid surface — menus / pass</h2>
+<div class="card">
+  <h2 style="margin-top:0">Season 1 · Tier <span class="num">37/50</span></h2>
+  <p>Storm Chaser board unlocks at tier <span class="num">40</span>.</p>
+  <div class="row"><button>Claim reward</button><button class="secondary">View pass</button></div>
+</div>
+<h2>Glass surface — in-match HUD (edge only)</h2>
+<div class="ocean"><div class="glass num">
+  ▲ NW swell building · zone closes 2:14 · stamina 68 · shells 5/6
+</div></div>
+</body></html>

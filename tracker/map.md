@@ -8,6 +8,14 @@
 
 A **buildable-by-others Game Design Document** for Ocean Battle Royale (realistic surf sim + battle royale): every gameplay system specified as unambiguous rules **plus provisional, tunable numbers** (damage, stamina rates, zone timings, loot tables), such that a dev/design team who has never spoken to Vraj could implement it. Includes UI *visual* design, in-world art direction, audio design, and design-level anti-cheat. No engine/tech decisions.
 
+## Constraints (2026-07-16, from Vraj)
+
+- **Solo dev team** (one developer). Every system spec should favor buildable-by-one scope; the 50–60 flexible lobby (#17) over BR-traditional 100 fits this.
+- **Hardware:** Alienware m15 R6 (i9-11900H, 32GB DDR4, RTX 3070 Mobile) primary; MacBook Air M4 secondary. Target-hardware ceiling for any perf assumptions in the GDD's provisional numbers.
+- **Engine:** Unreal Engine 5 free tier — noted as a constraint only; engine/tech *decisions* remain out of scope for this map.
+- **AI tooling budget:** $40/month total (OpenAI Plus — GPT-5.6 Sol/Codex; Anthropic Pro — Claude).
+- **Visual style:** semi-photorealism — higher fidelity than Fortnite, less demanding than CoD/Battlefield. Bounds #5 (in-world art direction) and #15 (UI visual design); wave/water rendering ambitions must respect the RTX 3070 Mobile ceiling.
+
 ## Notes
 
 - Domain: game design — realistic surf simulation crossed with battle royale. Core bet: *reading the ocean is the skill gap*.
@@ -25,6 +33,7 @@ A **buildable-by-others Game Design Document** for Ocean Battle Royale (realisti
 - [Match format & team modes (#17)](https://github.com/VrajGupta/Surf-Royale/issues/17) — flexible 50–60 lobby (fills to 60, launches 50+; tuned at 60); Solos + Duos (squads post-GDD); no DBNO — once-per-match 'waterlogged' stabilize with permanent injury tier. Graduated fog → [#18](https://github.com/VrajGupta/Surf-Royale/issues/18), [#19](https://github.com/VrajGupta/Surf-Royale/issues/19).
 - [Surf movement & ocean physics model (#2)](https://github.com/VrajGupta/Surf-Royale/issues/2) — forecastable swell sets (3–5 waves, 60–90 s apart, seeded, readable tells); 6-state machine (paddle ~1 m/s / duck-dive / pop-up / ride 6–11 m/s / wipeout / tread); sidearm-only while riding; wipeout = 1–4 s hold-down + leash, top-tier waves ~25% leash-snap → board adrift. Graduated fog → [#20](https://github.com/VrajGupta/Surf-Royale/issues/20).
 - [Death, spectate & waterlogged flow (#18)](https://github.com/VrajGupta/Surf-Royale/issues/18) — Solos: killer-cam on the ~10s anti-ghosting delay; Duos: live teammate POV (delayed killer-cam when both dead); one-tap report. Waterlogged: drift with current, ~25% one-armed paddle, board grab, flare/whistle signal, no weapons, executions = normal damage. Stabilize = 5s exposed tow, damage interrupts, revive at low HP + drained stamina. Match end: one-screen recap, Requeue as focused default; no podium.
+- [Social layer: duos comms & pings (#19)](https://github.com/VrajGupta/Surf-Royale/issues/19) — one context-resolved ping button (enemy/loot/location) + 'wave incoming / take this wave' ping on swell tells; opt-in party VOIP only (PTT default, quick-chat mapped to pings, no proximity/all-chat at launch); invite + fill toggle (no-fill allowed); pings are line-of-sight only, enemy pings decay ~4s and don't track — comms never bypass #13.
 
 ## Not yet specified
 

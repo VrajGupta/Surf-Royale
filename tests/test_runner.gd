@@ -2,6 +2,8 @@ extends SceneTree
 
 const LaunchConnection = preload("res://src/network/launch_connection.gd")
 const OceanTruth = preload("res://src/ocean/ocean_truth.gd")
+const SurfController = preload("res://src/surf/surf_controller.gd")
+const SurfInput = preload("res://src/surf/surf_input.gd")
 
 var _failures: Array[String] = []
 
@@ -21,6 +23,13 @@ func _initialize() -> void:
 		_test_ocean_sample_is_finite_and_normalized()
 		_test_underwater_uses_authoritative_surface_height()
 		_test_ocean_cpu_query_budget()
+
+	if suite in ["surf", "all"]:
+		_test_paddling_builds_speed_over_strokes()
+		_test_duck_dive_spends_stamina_and_returns_to_paddle()
+		_test_pop_up_requires_a_catchable_wave()
+		_test_catch_ride_wipeout_tread_and_recover_flow()
+		_test_non_finite_steer_cannot_poison_motion()
 
 	call_deferred("_finish")
 
@@ -89,6 +98,83 @@ func _test_ocean_cpu_query_budget() -> void:
 		ocean.sample(Vector2(float(index % 100), float(index / 100)), float(index) * 0.01)
 	var elapsed_ms := float(Time.get_ticks_usec() - started) / 1000.0
 	_expect_true(elapsed_ms <= 500.0, "10k headless ocean queries stay under the M4 budget (%.2f ms)" % elapsed_ms)
+
+func _test_paddling_builds_speed_over_strokes() -> void:
+	var controller := SurfController.new(OceanTruth.new(42))
+	var paddle := SurfInput.new()
+	paddle.paddle = true
+	controller.step(paddle, 0.4, 0.0)
+	var first_stroke_speed := controller.horizontal_speed()
+	for index in 4:
+		controller.step(paddle, 0.4, float(index + 1) * 0.4)
+	_expect_true(controller.horizontal_speed() > first_stroke_speed, "paddle speed builds over strokes")
+	_expect_true(controller.horizontal_speed() <= 1.2, "paddle speed remains within the GDD envelope")
+
+func _test_duck_dive_spends_stamina_and_returns_to_paddle() -> void:
+	var controller := SurfController.new(OceanTruth.new(42))
+	var duck := SurfInput.new()
+	duck.duck_dive = true
+	var starting_stamina := controller.stamina
+	controller.step(duck, 0.01, 0.0)
+	_expect_equal(controller.state, SurfController.State.DUCK_DIVE, "duck dive starts from paddling")
+	_expect_true(controller.stamina < starting_stamina, "duck dive spends stamina")
+	controller.step(SurfInput.new(), 1.0, 1.0)
+	_expect_equal(controller.state, SurfController.State.PADDLE, "duck dive returns to paddling")
+
+func _test_pop_up_requires_a_catchable_wave() -> void:
+	var controller := SurfController.new(OceanTruth.new(42))
+	controller.position = Vector3(0.0, 0.0, 50.0)
+	var pop_up := SurfInput.new()
+	pop_up.pop_up = true
+	controller.step(pop_up, 0.016, 10.0)
+	_expect_equal(controller.state, SurfController.State.PADDLE, "pop-up is rejected away from a breaking wave")
+
+func _test_catch_ride_wipeout_tread_and_recover_flow() -> void:
+	var ocean := OceanTruth.new(42)
+	var controller := SurfController.new(ocean)
+	controller.position = Vector3(0.0, 0.0, -12.0)
+	var catch_time := _find_catchable_time(ocean, Vector2(0.0, -12.0))
+	_expect_true(catch_time >= 0.0, "test seed produces a catchable wave")
+
+	var pop_up := SurfInput.new()
+	pop_up.pop_up = true
+	controller.step(pop_up, 0.016, catch_time)
+	_expect_equal(controller.state, SurfController.State.POP_UP, "catchable wave starts pop-up")
+	controller.step(SurfInput.new(), 0.8, catch_time + 0.8)
+	_expect_equal(controller.state, SurfController.State.RIDE, "committed pop-up becomes a ride")
+
+	controller.apply_impact(12.0)
+	_expect_equal(controller.state, SurfController.State.WIPEOUT, "heavy impact causes wipeout")
+	controller.step(SurfInput.new(), 1.2, catch_time + 2.0)
+	_expect_equal(controller.state, SurfController.State.TREAD, "wipeout resolves to treading")
+
+	var recover := SurfInput.new()
+	recover.recover = true
+	controller.step(recover, 0.016, catch_time + 2.1)
+	_expect_equal(controller.state, SurfController.State.PADDLE, "board recovery returns to paddling")
+
+func _test_non_finite_steer_cannot_poison_motion() -> void:
+	var ocean := OceanTruth.new(42)
+	var controller := SurfController.new(ocean)
+	controller.position = Vector3(0.0, 0.0, -12.0)
+	var catch_time := _find_catchable_time(ocean, Vector2(0.0, -12.0))
+	var pop_up := SurfInput.new()
+	pop_up.pop_up = true
+	controller.step(pop_up, 0.016, catch_time)
+	controller.step(SurfInput.new(), 0.8, catch_time + 0.8)
+	var speed_before_malformed_input := controller.horizontal_speed()
+	var malformed := SurfInput.new()
+	malformed.steer = NAN
+	controller.step(malformed, 0.016, catch_time + 1.0)
+	_expect_true(is_finite(controller.velocity.x) and is_finite(controller.velocity.z), "non-finite steer is rejected")
+	_expect_true(controller.horizontal_speed() >= speed_before_malformed_input, "malformed steer cannot erase ride momentum")
+
+func _find_catchable_time(ocean: Variant, position: Vector2) -> float:
+	for index in 800:
+		var time_seconds := float(index) * 0.05
+		if ocean.sample(position, time_seconds).break_phase >= 0.2:
+			return time_seconds
+	return -1.0
 
 func _expect_true(condition: bool, label: String) -> void:
 	if not condition:

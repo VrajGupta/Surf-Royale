@@ -1,0 +1,12 @@
+{
+	"architecture": "arm64",
+	"duration_seconds": 300.0,
+	"frame_samples": 17876,
+	"godot_version": "4.7.1-stable (official)",
+	"memory_growth_bytes": 2043306,
+	"p95_frame_ms": 16.6666666666667,
+	"passed": true,
+	"performance_budget_required": true,
+	"platform": "macOS",
+	"resolution": "1600x900"
+}

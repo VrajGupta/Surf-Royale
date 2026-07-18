@@ -23,11 +23,11 @@ Produce an evidence-backed, runnable Godot 4 tutorial-cove risk slice that lets 
 ## Burn-down order
 
 1. T001 — Technical brief and prototype choice (**closed by user decisions**)
-2. T002 — Godot bootstrap, M4 workflow, exports, and verification harness
-3. T003 — Deterministic authoritative ocean truth
-4. T004 — Momentum-honest six-state surf controller
-5. T005 — Two-client authority, prediction, and reconciliation
-6. T006 — Combat, stamina, wipeout, reef readability, and integrated evidence review
+2. T002 — Godot bootstrap, M4 workflow, exports, and verification harness (**closed**)
+3. T003 — Deterministic authoritative ocean truth (**closed**)
+4. T004 — Momentum-honest six-state surf controller (**closed**)
+5. T005 — Two-client authority, prediction, and reconciliation (**closed**)
+6. T006 — Combat, stamina, wipeout, reef readability, and integrated evidence review (**closed**)
 
 Dependency chain: `T001 → T002 → T003 → T004 → T005 → T006`.
 
@@ -35,7 +35,7 @@ Dependency chain: `T001 → T002 → T003 → T004 → T005 → T006`.
 
 - Godot is a prototype choice, not a permanent stack commitment.
 - T004 requires later user playtest sign-off before production tuning is locked.
-- T006 decides whether to retain Godot, run a Unity comparison spike, or revise scope.
+- T006 decision: retain Godot for the next reversible prototype iteration; do not claim a permanent production-stack selection.
 
 ## Out of scope
 

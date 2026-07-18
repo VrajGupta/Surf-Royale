@@ -2,7 +2,7 @@
 
 - Label: `wayfinder:prototype`
 - Issue: https://github.com/VrajGupta/Surf-Royale/issues/26
-- Status: open
+- Status: closed (implemented 2026-07-18)
 - Blocked by: T004
 
 ## What to build
@@ -24,3 +24,7 @@ Connect two clients to a 30 Hz headless ENet server. Replicate the server-owned 
 ```bash
 ./scripts/verify.sh network
 ```
+
+## Implementation (2026-07-18)
+
+Added a real local ENet harness that launches one headless server and two headless clients. The server owns the ocean seed, controller state, stamina, and transforms; clients submit only sanitized input intent, predict locally, and reconcile from snapshots. The deterministic harness applies 50 ms one-way delay and 2% packet drop, validates JSON evidence, rejects malformed/non-finite data, requires p95 correction ≤0.5 m, zero false wipeouts, two observed clients, no engine errors, and server missed ticks <1%.

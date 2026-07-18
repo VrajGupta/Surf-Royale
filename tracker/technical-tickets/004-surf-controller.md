@@ -2,7 +2,7 @@
 
 - Label: `wayfinder:prototype` (HITL feel review later)
 - Issue: https://github.com/VrajGupta/Surf-Royale/issues/25
-- Status: open
+- Status: closed (implemented 2026-07-18)
 - Blocked by: T003
 
 ## What to build
@@ -23,3 +23,7 @@ Implement typed, data-driven transitions for paddling, duck-dive, pop-up, riding
 ```bash
 ./scripts/verify.sh surf
 ```
+
+## Implementation (2026-07-18)
+
+Added a pure typed-GDScript controller model with data-driven tuning for paddling, duck-dive, pop-up, riding, wipeout, and treading. Paddling builds over strokes, pop-up is gated by reef-break ocean truth, carving changes direction gradually, impacts trigger wipeout, and recovery returns to paddling. Tests cover the complete state flow, illegal pop-up, low-frame-duration duck recovery, stamina, speed bounds, and malformed non-finite steering.

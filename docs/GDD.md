@@ -19,8 +19,8 @@
 
 **Production constraints (map.md, 2026-07-16, from Vraj)**
 - Solo dev team (one developer).
-- Hardware ceiling for all perf assumptions: Alienware m15 R6 (i9-11900H, 32GB DDR4, RTX 3070 Mobile) primary; MacBook Air M4 secondary.
-- Engine: Unreal Engine 5 free tier — noted as constraint only; engine/tech decisions are out of this document's scope.
+- Original hardware ceiling for design assumptions: Alienware m15 R6 (i9-11900H, 32GB DDR4, RTX 3070 Mobile) primary; MacBook Air M4 secondary. **Current technical phase (2026-07-18):** M4 MacBook Air is the primary development machine; RTX 3070 Mobile remains the Windows performance reference.
+- Historical engine note: Unreal Engine 5 free tier was recorded during GDD charting, but engine decisions were out of this document's scope. **Superseded 2026-07-18:** the technical phase excludes UE5 and uses Godot 4 for a reversible risk prototype; see `tracker/technical-map.md`.
 - Visual style bound: semi-photorealism — higher fidelity than Fortnite, less demanding than CoD/Battlefield; wave/water rendering must respect the RTX 3070 Mobile ceiling.
 
 **Research anchors (ticket 003; asset: `docs/research/comparables-and-real-ocean.md`)**

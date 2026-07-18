@@ -11,8 +11,8 @@ A **buildable-by-others Game Design Document** for Ocean Battle Royale (realisti
 ## Constraints (2026-07-16, from Vraj)
 
 - **Solo dev team** (one developer). Every system spec should favor buildable-by-one scope; the 50–60 flexible lobby (#17) over BR-traditional 100 fits this.
-- **Hardware:** Alienware m15 R6 (i9-11900H, 32GB DDR4, RTX 3070 Mobile) primary; MacBook Air M4 secondary. Target-hardware ceiling for any perf assumptions in the GDD's provisional numbers.
-- **Engine:** Unreal Engine 5 free tier — noted as a constraint only; engine/tech *decisions* remain out of scope for this map.
+- **Hardware at original charting:** Alienware m15 R6 (i9-11900H, 32GB DDR4, RTX 3070 Mobile) primary; MacBook Air M4 secondary. **Superseded for the 2026-07-18 technical phase:** M4 MacBook Air is the primary development machine; RTX 3070 Mobile remains the Windows performance reference.
+- **Historical engine note:** Unreal Engine 5 free tier was recorded as a constraint for this design-only map. **Superseded 2026-07-18:** the technical phase is non-UE5; its reversible prototype choice is Godot 4. See `tracker/technical-map.md`.
 - **AI tooling budget:** $40/month total (OpenAI Plus — GPT-5.6 Sol/Codex; Anthropic Pro — Claude).
 - **Visual style:** semi-photorealism — higher fidelity than Fortnite, less demanding than CoD/Battlefield. Bounds #5 (in-world art direction) and #15 (UI visual design); wave/water rendering ambitions must respect the RTX 3070 Mobile ceiling.
 

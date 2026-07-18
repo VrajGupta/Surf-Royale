@@ -1,0 +1,8 @@
+# Godot generated state
+.godot/
+
+# Local build artifacts
+build/
+
+# macOS
+.DS_Store

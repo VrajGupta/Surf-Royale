@@ -2,7 +2,7 @@
 
 - Label: `wayfinder:task`
 - Issue: https://github.com/VrajGupta/Surf-Royale/issues/23
-- Status: open
+- Status: closed (implemented 2026-07-18)
 - Blocked by: T001
 
 ## What to build
@@ -23,3 +23,7 @@ Create a minimal Godot 4 typed-GDScript project with a launch screen, a render-i
 ```bash
 ./scripts/verify.sh bootstrap
 ```
+
+## Implementation (2026-07-18)
+
+Godot 4.7.1 installed natively through Homebrew. Added the typed-GDScript project, launch screen, five-second retryable connection failure policy, render-independent 30 Hz server smoke path, custom headless test runner, macOS/Windows export presets, setup runbook, and verification harness. The red-team pass found and fixed a late-failure race that could overwrite a successful connection state.

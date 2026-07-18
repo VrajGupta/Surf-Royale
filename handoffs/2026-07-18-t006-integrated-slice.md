@@ -23,7 +23,7 @@
 - p95 frame time: 16.667 ms.
 - Memory growth: 2,043,306 bytes.
 - Screenshot and JSON: `docs/evidence/`.
-- Final local macOS ZIP: 59,622,880 bytes, SHA-256 `d5eeaefb6349e64f7d46cce3ce42e647fef35ca44c83f014df68c6cba7dea68e`.
+- Latest local macOS ZIP after the Part 3 authority audit: 59,623,833 bytes, SHA-256 `c7dc3f3168767561a90638df4ed3296713158fbf0cf9645494bfa83bf59ddb88`.
 - Full verification: `./scripts/verify.sh all` exits 0.
 
 ## Red-team pass

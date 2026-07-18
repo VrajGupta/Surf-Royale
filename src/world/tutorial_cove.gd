@@ -155,7 +155,7 @@ func _build_world() -> void:
 	add_child(target)
 
 	_camera = Camera3D.new()
-	_camera.position = Vector3(0.0, 10.0, 14.0)
+	_camera.position = Vector3(0.0, 10.0, -26.0)
 	_camera.current = true
 	add_child(_camera)
 
@@ -229,7 +229,7 @@ func _update_player_visuals() -> void:
 	_board.position = base_position + Vector3(0.0, 0.12, 0.0)
 	_surfer.position = base_position + Vector3(0.0, 0.95, 0.0)
 	_surfer.visible = _controller.state not in [SurfControllerType.State.WIPEOUT, SurfControllerType.State.TREAD]
-	_camera.position = _camera.position.lerp(base_position + Vector3(0.0, 8.0, 13.0), 0.08)
+	_camera.position = _camera.position.lerp(base_position + Vector3(0.0, 8.0, -13.0), 0.08)
 	_camera.look_at(base_position + Vector3(0.0, 0.7, 0.0), Vector3.UP)
 	_status_label.text = "STATE %-10s  SPEED %4.1f m/s  STAMINA %3d  HITS %d" % [
 		_state_name(_controller.state),

@@ -4,6 +4,8 @@ const LaunchConnection = preload("res://src/network/launch_connection.gd")
 const OceanTruth = preload("res://src/ocean/ocean_truth.gd")
 const SurfController = preload("res://src/surf/surf_controller.gd")
 const SurfInput = preload("res://src/surf/surf_input.gd")
+const NetworkInputValidator = preload("res://src/network/network_input_validator.gd")
+const CorrectionTracker = preload("res://src/network/correction_tracker.gd")
 
 var _failures: Array[String] = []
 
@@ -30,6 +32,12 @@ func _initialize() -> void:
 		_test_pop_up_requires_a_catchable_wave()
 		_test_catch_ride_wipeout_tread_and_recover_flow()
 		_test_non_finite_steer_cannot_poison_motion()
+
+	if suite in ["network", "all"]:
+		_test_server_sanitizes_client_input_and_ignores_claims()
+		_test_server_rejects_non_finite_steer()
+		_test_correction_tracker_reports_nearest_rank_p95()
+		_test_correction_tracker_rejects_non_finite_samples()
 
 	call_deferred("_finish")
 
@@ -168,6 +176,36 @@ func _test_non_finite_steer_cannot_poison_motion() -> void:
 	controller.step(malformed, 0.016, catch_time + 1.0)
 	_expect_true(is_finite(controller.velocity.x) and is_finite(controller.velocity.z), "non-finite steer is rejected")
 	_expect_true(controller.horizontal_speed() >= speed_before_malformed_input, "malformed steer cannot erase ride momentum")
+
+func _test_server_sanitizes_client_input_and_ignores_claims() -> void:
+	var sanitized = NetworkInputValidator.sanitize({
+		"steer": 8.0,
+		"paddle": true,
+		"duck_dive": false,
+		"pop_up": false,
+		"recover": false,
+		"position": Vector3(999.0, 999.0, 999.0),
+		"damage": 999,
+	})
+	_expect_near(sanitized.steer, 1.0, 0.0001, "server clamps steering intent")
+	_expect_true(sanitized.paddle, "server accepts boolean paddle intent")
+	_expect_equal(sanitized.get_property_list().any(func(property: Dictionary) -> bool: return property.name == "position"), false, "sanitized input has no position claim")
+
+func _test_server_rejects_non_finite_steer() -> void:
+	var sanitized = NetworkInputValidator.sanitize({"steer": NAN, "paddle": true})
+	_expect_near(sanitized.steer, 0.0, 0.0001, "non-finite steer becomes neutral")
+
+func _test_correction_tracker_reports_nearest_rank_p95() -> void:
+	var tracker := CorrectionTracker.new()
+	tracker.record(0.1)
+	tracker.record(0.2)
+	tracker.record(0.6)
+	_expect_near(tracker.p95(), 0.6, 0.0001, "p95 uses nearest-rank behavior")
+
+func _test_correction_tracker_rejects_non_finite_samples() -> void:
+	var tracker := CorrectionTracker.new()
+	_expect_true(not tracker.record(NAN), "non-finite correction is rejected")
+	_expect_equal(tracker.invalid_samples, 1, "invalid correction is counted")
 
 func _find_catchable_time(ocean: Variant, position: Vector2) -> float:
 	for index in 800:

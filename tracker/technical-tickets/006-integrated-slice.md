@@ -2,7 +2,7 @@
 
 - Label: `wayfinder:prototype` (HITL review)
 - Issue: https://github.com/VrajGupta/Surf-Royale/issues/27
-- Status: open
+- Status: completed 2026-07-18
 - Blocked by: T005
 
 ## What to build
@@ -25,3 +25,15 @@ Complete the narrow acceptance scenario: one authored reef break; one determinis
 ```bash
 ./scripts/verify.sh all
 ```
+
+## Completion evidence
+
+- The tutorial cove includes an authored graybox reef, board/surfer, target buoy, edge HUD, and generated visual/audio swell cues.
+- The 75-second deterministic three-wave set drives the CPU-queryable ocean and six-state surf controller.
+- The impaired ENet harness sends bounded fire intent; the server alone simulates projectiles, applies the one-metre cutoff, records hits, and mutates player/board HP.
+- The rendered M4 benchmark completed 300 seconds at 1600×900 with 16.667 ms p95 and 2,043,306 bytes memory growth. Evidence is under `docs/evidence/`.
+- The final gate exports `build/macos/SurfRoyale.zip`; Windows x86_64 export and RTX 3070 Mobile reference instructions are in `docs/runbooks/godot-setup.md`.
+
+## Engine review decision
+
+**Retain Godot for the next reversible prototype iteration.** The M4 render budget, deterministic CPU ocean, headless 30 Hz server, impaired two-client correction gate, authoritative sidearm path, and cross-platform export path all passed. This is not a permanent production-stack selection; a comparison spike remains appropriate only if a later slice exposes a concrete Godot limitation.

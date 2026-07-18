@@ -1,8 +1,11 @@
 extends Control
 
+signal local_slice_requested
+
 const SERVER_PORT := 7000
 
 @onready var _address: LineEdit = %Address
+@onready var _local_slice_button: Button = %LocalSliceButton
 @onready var _connect_button: Button = %ConnectButton
 @onready var _status: Label = %Status
 
@@ -10,6 +13,7 @@ var _connection := LaunchConnection.new(5.0)
 var _peer: ENetMultiplayerPeer
 
 func _ready() -> void:
+	_local_slice_button.pressed.connect(local_slice_requested.emit)
 	_connect_button.pressed.connect(_connect)
 	_status.text = _connection.message
 

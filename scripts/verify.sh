@@ -17,7 +17,20 @@ if [[ "$version" != 4.7.1* ]]; then
 fi
 
 run_tests() {
-  "$GODOT_BIN" --headless --path "$ROOT" -s res://tests/test_runner.gd -- "$1"
+  local suite="$1"
+  local log_file
+  log_file="$(mktemp)"
+  if ! "$GODOT_BIN" --headless --path "$ROOT" -s res://tests/test_runner.gd -- "$suite" >"$log_file" 2>&1; then
+    cat "$log_file"
+    rm -f "$log_file"
+    return 1
+  fi
+  cat "$log_file"
+  if grep -Eq 'SCRIPT ERROR:|^ERROR:' "$log_file" || ! grep -q 'TESTS_OK' "$log_file"; then
+    rm -f "$log_file"
+    return 1
+  fi
+  rm -f "$log_file"
 }
 
 verify_bootstrap() {
@@ -27,6 +40,74 @@ verify_bootstrap() {
   "$GODOT_BIN" --headless --editor --path "$ROOT" --quit-after 2
   run_tests bootstrap
   "$GODOT_BIN" --headless --path "$ROOT" -- --server-smoke=0.25
+}
+
+verify_slice() {
+  run_tests slice
+
+  local result_dir="$ROOT/build/slice"
+  rm -rf "$result_dir"
+  mkdir -p "$result_dir"
+  local smoke_log="$result_dir/smoke.log"
+
+  "$GODOT_BIN" --headless --path "$ROOT" -- \
+    --slice-smoke=3.0 --result=res://build/slice/smoke.json \
+    >"$smoke_log" 2>&1
+
+  python3 - "$result_dir" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+result = json.loads((root / "smoke.json").read_text())
+log = (root / "smoke.log").read_text()
+assert "ERROR:" not in log and "SCRIPT ERROR:" not in log, log
+assert "SLICE_BENCHMARK_OK" in log, log
+assert result["passed"] is True, result
+assert result["resolution"] == "1600x900", result
+assert result["duration_seconds"] >= 3.0, result
+assert result["frame_samples"] >= 30, result
+assert result["memory_growth_bytes"] <= 67_108_864, result
+print("SLICE_GATE_OK")
+PY
+}
+
+verify_evidence_and_export() {
+  python3 - "$ROOT" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+evidence = json.loads((root / "docs/evidence/m4-2026-07-18-benchmark.json").read_text())
+screenshot = root / "docs/evidence/m4-2026-07-18-tutorial-cove.png"
+runbook = (root / "docs/runbooks/godot-setup.md").read_text()
+assert evidence["passed"] is True, evidence
+assert evidence["platform"] == "macOS", evidence
+assert evidence["architecture"] == "arm64", evidence
+assert evidence["resolution"] == "1600x900", evidence
+assert evidence["duration_seconds"] >= 300.0, evidence
+assert evidence["p95_frame_ms"] <= 16.7, evidence
+assert evidence["memory_growth_bytes"] <= 67_108_864, evidence
+assert screenshot.stat().st_size > 0
+assert "1920×1080" in runbook and "RTX 3070 Mobile" in runbook
+print("EVIDENCE_GATE_OK")
+PY
+
+  local export_dir="$ROOT/build/macos"
+  local export_log="$export_dir/export.log"
+  rm -rf "$export_dir"
+  mkdir -p "$export_dir"
+  "$GODOT_BIN" --headless --path "$ROOT" \
+    --export-release "macOS" "$export_dir/SurfRoyale.zip" \
+    >"$export_log" 2>&1
+  test -s "$export_dir/SurfRoyale.zip"
+  if grep -Eq 'SCRIPT ERROR:|^ERROR:' "$export_log"; then
+    cat "$export_log"
+    return 1
+  fi
+  printf 'MACOS_EXPORT_GATE_OK\n'
 }
 
 verify_network() {
@@ -44,14 +125,14 @@ verify_network() {
   local client_two_pid=""
 
   cleanup_network_processes() {
-    [[ -z "$client_one_pid" ]] || kill "$client_one_pid" 2>/dev/null || true
-    [[ -z "$client_two_pid" ]] || kill "$client_two_pid" 2>/dev/null || true
-    [[ -z "$server_pid" ]] || kill "$server_pid" 2>/dev/null || true
+    [[ -z "${client_one_pid:-}" ]] || kill "$client_one_pid" 2>/dev/null || true
+    [[ -z "${client_two_pid:-}" ]] || kill "$client_two_pid" 2>/dev/null || true
+    [[ -z "${server_pid:-}" ]] || kill "$server_pid" 2>/dev/null || true
   }
   trap cleanup_network_processes EXIT
 
   "$GODOT_BIN" --headless --path "$ROOT" -- \
-    --server --port=7000 --duration=7.0 --result=res://build/network/server.json \
+    --server --port=7000 --duration=5.0 --result=res://build/network/server.json \
     >"$server_log" 2>&1 &
   server_pid=$!
 
@@ -72,11 +153,11 @@ verify_network() {
   fi
 
   "$GODOT_BIN" --headless --path "$ROOT" -- \
-    --client=1 --host=127.0.0.1 --port=7000 --duration=4.0 --result=res://build/network/client-1.json \
+    --client=1 --host=127.0.0.1 --port=7000 --duration=6.0 --result=res://build/network/client-1.json \
     >"$client_one_log" 2>&1 &
   client_one_pid=$!
   "$GODOT_BIN" --headless --path "$ROOT" -- \
-    --client=2 --host=127.0.0.1 --port=7000 --duration=4.0 --result=res://build/network/client-2.json \
+    --client=2 --host=127.0.0.1 --port=7000 --duration=6.0 --result=res://build/network/client-2.json \
     >"$client_two_log" 2>&1 &
   client_two_pid=$!
 
@@ -108,6 +189,10 @@ logs = [(root / name).read_text() for name in ("server.log", "client-1.log", "cl
 assert all("ERROR:" not in log and "SCRIPT ERROR:" not in log for log in logs), logs
 assert server["clients_seen"] >= 2, server
 assert server["missed_tick_rate"] < 0.01, server
+assert server["sidearm_fire_requests"] >= 2, server
+assert server["sidearm_hits"] >= 1, server
+assert server["minimum_player_hp"] < 100, server
+assert server["minimum_board_hp"] < 100, server
 for client in clients:
     assert client["passed"] is True, client
     assert client["connected"] is True, client
@@ -127,13 +212,18 @@ case "$SUITE" in
   ocean|surf)
     run_tests "$SUITE"
     ;;
+  slice)
+    verify_slice
+    ;;
   network)
     verify_network
     ;;
   all)
     verify_bootstrap
     run_tests all
+    verify_slice
     verify_network
+    verify_evidence_and_export
     ;;
   *)
     printf 'Unknown verification suite: %s\n' "$SUITE" >&2

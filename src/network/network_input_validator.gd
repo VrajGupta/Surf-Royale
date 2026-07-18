@@ -17,6 +17,7 @@ static func sanitize(payload: Variant) -> RefCounted:
 	result.duck_dive = _strict_bool(payload.get("duck_dive", false))
 	result.pop_up = _strict_bool(payload.get("pop_up", false))
 	result.recover = _strict_bool(payload.get("recover", false))
+	result.fire = _strict_bool(payload.get("fire", false))
 	return result
 
 static func _strict_bool(value: Variant) -> bool:

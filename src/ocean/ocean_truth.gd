@@ -5,6 +5,7 @@ const OceanSampleType = preload("res://src/ocean/ocean_sample.gd")
 const WAVE_COUNT := 3
 const REEF_BREAK_Z := -12.0
 const REEF_INFLUENCE_METERS := 8.0
+const SET_PERIOD_SECONDS := 75.0
 
 var _seed: int
 var _waves: Array[Dictionary] = []
@@ -26,7 +27,8 @@ func sample(position: Vector2, time_seconds: float) -> OceanSample:
 	var surface_velocity := Vector2.ZERO
 
 	for wave in _waves:
-		var elapsed := time_seconds - float(wave.start)
+		var raw_elapsed := time_seconds - float(wave.start)
+		var elapsed := fposmod(raw_elapsed + SET_PERIOD_SECONDS * 0.5, SET_PERIOD_SECONDS) - SET_PERIOD_SECONDS * 0.5
 		var envelope := exp(-pow((elapsed - 7.0) / 8.0, 2.0))
 		var direction: Vector2 = wave.direction
 		var wave_number: float = TAU / float(wave.wavelength)

@@ -6,6 +6,8 @@ const SurfController = preload("res://src/surf/surf_controller.gd")
 const SurfInput = preload("res://src/surf/surf_input.gd")
 const NetworkInputValidator = preload("res://src/network/network_input_validator.gd")
 const CorrectionTracker = preload("res://src/network/correction_tracker.gd")
+const SidearmProjectile = preload("res://src/gameplay/sidearm_projectile.gd")
+const FrameMetrics = preload("res://src/telemetry/frame_metrics.gd")
 
 var _failures: Array[String] = []
 
@@ -21,6 +23,7 @@ func _initialize() -> void:
 	if suite in ["ocean", "all"]:
 		_test_ocean_schedules_exactly_three_repeatable_waves()
 		_test_ocean_seed_changes_schedule()
+		_test_ocean_set_repeats_every_seventy_five_seconds()
 		_test_wave_schedule_copy_cannot_mutate_server_truth()
 		_test_ocean_sample_is_finite_and_normalized()
 		_test_underwater_uses_authoritative_surface_height()
@@ -36,8 +39,16 @@ func _initialize() -> void:
 	if suite in ["network", "all"]:
 		_test_server_sanitizes_client_input_and_ignores_claims()
 		_test_server_rejects_non_finite_steer()
+		_test_server_accepts_only_boolean_fire_intent()
 		_test_correction_tracker_reports_nearest_rank_p95()
 		_test_correction_tracker_rejects_non_finite_samples()
+
+	if suite in ["slice", "all"]:
+		_test_sidearm_projectile_travels_ballistically()
+		_test_sidearm_projectile_stops_at_one_metre_underwater()
+		_test_sidearm_projectile_rejects_non_finite_state()
+		_test_frame_metrics_report_nearest_rank_p95()
+		_test_frame_metrics_report_non_negative_memory_growth()
 
 	call_deferred("_finish")
 
@@ -77,6 +88,13 @@ func _test_ocean_seed_changes_schedule() -> void:
 	var first := OceanTruth.new(20260718)
 	var second := OceanTruth.new(20260719)
 	_expect_true(first.wave_starts() != second.wave_starts(), "different seeds change the schedule")
+
+func _test_ocean_set_repeats_every_seventy_five_seconds() -> void:
+	var ocean := OceanTruth.new(20260718)
+	var first = ocean.sample(Vector2(4.0, -12.0), 12.5)
+	var repeated = ocean.sample(Vector2(4.0, -12.0), 87.5)
+	_expect_near(repeated.height, first.height, 0.0001, "wave height repeats on the 75-second set period")
+	_expect_near(repeated.break_phase, first.break_phase, 0.0001, "reef break phase repeats with the set")
 
 func _test_wave_schedule_copy_cannot_mutate_server_truth() -> void:
 	var ocean := OceanTruth.new(9)
@@ -195,6 +213,12 @@ func _test_server_rejects_non_finite_steer() -> void:
 	var sanitized = NetworkInputValidator.sanitize({"steer": NAN, "paddle": true})
 	_expect_near(sanitized.steer, 0.0, 0.0001, "non-finite steer becomes neutral")
 
+func _test_server_accepts_only_boolean_fire_intent() -> void:
+	var valid = NetworkInputValidator.sanitize({"fire": true})
+	var malformed = NetworkInputValidator.sanitize({"fire": "yes"})
+	_expect_true(valid.fire, "boolean fire intent reaches server simulation")
+	_expect_true(not malformed.fire, "non-boolean fire claim is rejected")
+
 func _test_correction_tracker_reports_nearest_rank_p95() -> void:
 	var tracker := CorrectionTracker.new()
 	tracker.record(0.1)
@@ -206,6 +230,40 @@ func _test_correction_tracker_rejects_non_finite_samples() -> void:
 	var tracker := CorrectionTracker.new()
 	_expect_true(not tracker.record(NAN), "non-finite correction is rejected")
 	_expect_equal(tracker.invalid_samples, 1, "invalid correction is counted")
+
+func _test_sidearm_projectile_travels_ballistically() -> void:
+	var ocean := OceanTruth.new(42)
+	var projectile := SidearmProjectile.new(Vector3(0.0, 3.0, 0.0), Vector3(0.0, 0.0, 30.0))
+	projectile.step(0.1, ocean, 0.0)
+	_expect_near(projectile.position.z, 3.0, 0.001, "sidearm projectile advances by velocity")
+	_expect_true(projectile.alive, "projectile above water remains active")
+
+func _test_sidearm_projectile_stops_at_one_metre_underwater() -> void:
+	var ocean := OceanTruth.new(42)
+	var surface = ocean.sample(Vector2.ZERO, 0.0)
+	var projectile := SidearmProjectile.new(Vector3(0.0, surface.height - 1.0, 0.0), Vector3(0.0, 0.0, 30.0))
+	projectile.step(0.016, ocean, 0.0)
+	_expect_true(not projectile.alive, "projectile at the one-metre cutoff stops")
+	_expect_true(projectile.water_cutoff, "water cutoff is recorded")
+
+func _test_sidearm_projectile_rejects_non_finite_state() -> void:
+	var ocean := OceanTruth.new(42)
+	var projectile := SidearmProjectile.new(Vector3(NAN, 2.0, 0.0), Vector3(0.0, 0.0, 30.0))
+	projectile.step(0.016, ocean, 0.0)
+	_expect_true(not projectile.alive, "non-finite projectile state is discarded")
+	_expect_true(not projectile.water_cutoff, "invalid state is not reported as a water hit")
+
+func _test_frame_metrics_report_nearest_rank_p95() -> void:
+	var metrics := FrameMetrics.new(1_000)
+	metrics.record(0.005)
+	metrics.record(0.010)
+	metrics.record(0.020)
+	_expect_near(metrics.p95_ms(), 20.0, 0.001, "frame p95 uses nearest-rank milliseconds")
+
+func _test_frame_metrics_report_non_negative_memory_growth() -> void:
+	var metrics := FrameMetrics.new(2_000)
+	metrics.finish(1_500)
+	_expect_equal(metrics.memory_growth_bytes(), 0, "released memory cannot report negative growth")
 
 func _find_catchable_time(ocean: Variant, position: Vector2) -> float:
 	for index in 800:

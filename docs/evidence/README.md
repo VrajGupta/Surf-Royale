@@ -18,8 +18,8 @@ build/macos/SurfRoyale.zip
 Evidence from the final T006 gate:
 
 ```text
-size:   59,622,880 bytes
-sha256: d5eeaefb6349e64f7d46cce3ce42e647fef35ca44c83f014df68c6cba7dea68e
+size:   59,623,833 bytes
+sha256: c7dc3f3168767561a90638df4ed3296713158fbf0cf9645494bfa83bf59ddb88
 ```
 
 The artifact is generated under the ignored `build/` directory and is not committed. Recreate it with the pinned templates through the global verification command or the export command in `docs/runbooks/godot-setup.md`.

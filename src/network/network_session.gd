@@ -12,6 +12,7 @@ const SERVER_PEER_ID := 1
 const SERVER_OCEAN_SEED := 20260718
 const ONE_WAY_DELAY_SECONDS := 0.05
 const DROP_INTERVAL := 50
+const MAX_INPUT_SEQUENCE_ADVANCE := 120
 
 var _is_server := false
 var _client_label := 0
@@ -29,21 +30,26 @@ var _server_ocean: Variant
 var _server_controllers: Dictionary = {}
 var _server_inputs: Dictionary = {}
 var _server_fire_latches: Dictionary = {}
+var _server_last_input_sequence: Dictionary = {}
 var _server_player_hp: Dictionary = {}
 var _server_board_hp: Dictionary = {}
 var _server_projectiles: Array[Dictionary] = []
 var _snapshot_queue: Array[Dictionary] = []
 var _clients_seen_total := 0
 var _server_fire_requests := 0
+var _server_accepted_inputs := 0
+var _server_rejected_input_sequences := 0
 var _server_hits := 0
 var _server_water_cutoffs := 0
 
 var _client_controller: Variant
+var _client_ocean_seed := -1
 var _input_queue: Array[Dictionary] = []
 var _corrections := CorrectionTrackerType.new()
 var _snapshot_count := 0
 var _false_state_transitions := 0
 var _fire_sent := false
+var _duplicate_input_sent := false
 
 func start_server(port: int, duration_seconds: float, result_path: String) -> int:
 	_is_server = true
@@ -144,6 +150,18 @@ func _client_tick(delta: float) -> void:
 				"fire": input.fire,
 			},
 		})
+	if not _duplicate_input_sent and _connected_elapsed >= 2.0:
+		_duplicate_input_sent = true
+		_input_queue.append({
+			"deliver_at": _elapsed + ONE_WAY_DELAY_SECONDS,
+			"sequence": maxi(_sequence - 5, 0),
+			"payload": {"steer": -1.0, "paddle": false, "fire": true},
+		})
+		_input_queue.append({
+			"deliver_at": _elapsed + ONE_WAY_DELAY_SECONDS,
+			"sequence": 2_000_000,
+			"payload": {"steer": 1.0, "paddle": false, "fire": true},
+		})
 	_flush_input_queue()
 
 	if _connected_elapsed >= _duration_seconds:
@@ -188,14 +206,16 @@ func _on_server_peer_connected(peer_id: int) -> void:
 	_server_controllers[peer_id] = controller
 	_server_inputs[peer_id] = SurfInputType.new()
 	_server_fire_latches[peer_id] = false
+	_server_last_input_sequence[peer_id] = -1
 	_server_player_hp[peer_id] = 100
 	_server_board_hp[peer_id] = 100
-	server_hello.rpc_id(peer_id, controller.position)
+	server_hello.rpc_id(peer_id, controller.position, SERVER_OCEAN_SEED)
 
 func _on_server_peer_disconnected(peer_id: int) -> void:
 	_server_controllers.erase(peer_id)
 	_server_inputs.erase(peer_id)
 	_server_fire_latches.erase(peer_id)
+	_server_last_input_sequence.erase(peer_id)
 	_snapshot_queue = _snapshot_queue.filter(
 		func(packet: Dictionary) -> bool: return int(packet.peer_id) != peer_id
 	)
@@ -211,8 +231,9 @@ func _on_server_disconnected() -> void:
 		_finish_client(_snapshot_count >= 30, "server completed soak")
 
 @rpc("authority", "call_remote", "reliable")
-func server_hello(initial_position: Vector3) -> void:
-	_client_controller = SurfControllerType.new(OceanTruthType.new(1000 + _client_label))
+func server_hello(initial_position: Vector3, ocean_seed: int) -> void:
+	_client_ocean_seed = ocean_seed
+	_client_controller = SurfControllerType.new(OceanTruthType.new(_client_ocean_seed))
 	_client_controller.position = initial_position
 	_connected = true
 	_connected_elapsed = 0.0
@@ -225,6 +246,12 @@ func submit_input(sequence: int, payload: Variant) -> void:
 	var sender := multiplayer.get_remote_sender_id()
 	if not _server_controllers.has(sender) or sequence < 0:
 		return
+	var last_sequence := int(_server_last_input_sequence.get(sender, -1))
+	if sequence <= last_sequence or sequence > last_sequence + MAX_INPUT_SEQUENCE_ADVANCE:
+		_server_rejected_input_sequences += 1
+		return
+	_server_last_input_sequence[sender] = sequence
+	_server_accepted_inputs += 1
 	var sanitized: Variant = InputValidator.sanitize(payload)
 	var fire_was_pressed := bool(_server_fire_latches.get(sender, false))
 	if sanitized.fire and not fire_was_pressed:
@@ -334,7 +361,10 @@ func _finish_server() -> void:
 		"elapsed": _elapsed,
 		"missed_tick_rate": missed_tick_rate,
 		"clients_seen": _clients_seen_total,
+		"ocean_seed": SERVER_OCEAN_SEED,
 		"sidearm_fire_requests": _server_fire_requests,
+		"accepted_inputs": _server_accepted_inputs,
+		"rejected_input_sequences": _server_rejected_input_sequences,
 		"sidearm_hits": _server_hits,
 		"water_cutoffs": _server_water_cutoffs,
 		"minimum_player_hp": minimum_player_hp,
@@ -352,6 +382,7 @@ func _finish_client(success: bool, reason: String = "") -> void:
 		"mode": "client",
 		"label": _client_label,
 		"connected": _connected,
+		"ocean_seed": _client_ocean_seed,
 		"snapshots": _snapshot_count,
 		"p95_correction_m": correction_p95,
 		"false_state_transitions": _false_state_transitions,

@@ -1,6 +1,7 @@
 # Wayfinder Map — Non-UE5 Godot Risk Slice
 
 - Canonical issue: [Wayfinder Map — Non-UE5 Godot Risk Slice (#21)](https://github.com/VrajGupta/Surf-Royale/issues/21)
+- Status: completed 2026-07-18; no open implementation frontier.
 - Tracker: GitHub Issues on `VrajGupta/Surf-Royale`; local mirrors live in `tracker/technical-tickets/`.
 - Frontier rule: open + unassigned + every blocker closed.
 
@@ -28,8 +29,9 @@ Produce an evidence-backed, runnable Godot 4 tutorial-cove risk slice that lets 
 4. T004 — Momentum-honest six-state surf controller (**closed**)
 5. T005 — Two-client authority, prediction, and reconciliation (**closed**)
 6. T006 — Combat, stamina, wipeout, reef readability, and integrated evidence review (**closed**)
+7. T007 — Part 3 network-authority audit fixes (**closed**)
 
-Dependency chain: `T001 → T002 → T003 → T004 → T005 → T006`.
+Dependency chain: `T001 → T002 → T003 → T004 → T005 → T006 → T007`.
 
 ## Decision gates
 

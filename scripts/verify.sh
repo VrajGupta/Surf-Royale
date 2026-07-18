@@ -190,9 +190,12 @@ assert all("ERROR:" not in log and "SCRIPT ERROR:" not in log for log in logs), 
 assert server["clients_seen"] >= 2, server
 assert server["missed_tick_rate"] < 0.01, server
 assert server["sidearm_fire_requests"] >= 2, server
+assert server["rejected_input_sequences"] >= 4, server
+assert server["accepted_inputs"] >= 200, server
 assert server["sidearm_hits"] >= 1, server
 assert server["minimum_player_hp"] < 100, server
 assert server["minimum_board_hp"] < 100, server
+assert server["ocean_seed"] == 20260718, server
 for client in clients:
     assert client["passed"] is True, client
     assert client["connected"] is True, client
@@ -200,6 +203,7 @@ for client in clients:
     assert client["p95_correction_m"] <= 0.5, client
     assert client["false_state_transitions"] == 0, client
     assert client["invalid_snapshots"] == 0, client
+    assert client["ocean_seed"] == server["ocean_seed"], (server, client)
 
 print("NETWORK_GATE_OK")
 PY

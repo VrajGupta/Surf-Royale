@@ -2,7 +2,7 @@
 
 - Label: `wayfinder:prototype`
 - Issue: https://github.com/VrajGupta/Surf-Royale/issues/24
-- Status: open
+- Status: closed (implemented 2026-07-18)
 - Blocked by: T002
 
 ## What to build
@@ -23,3 +23,7 @@ Implement a CPU-queryable ocean-truth layer driven by a server-owned seed. It pr
 ```bash
 ./scripts/verify.sh ocean
 ```
+
+## Implementation (2026-07-18)
+
+Added a render-independent, CPU-queryable seeded ocean model with exactly three ordered waves, authored reef influence, height/normal/surface-velocity/current/break-phase samples, and authoritative underwater classification. Tests cover repeatability, seed divergence, schedule-copy isolation, bounded/normalized outputs, underwater behavior, and a 10,000-query M4 headless budget. Visual/audio consumers are intentionally assembled in T006 from these cue values.
